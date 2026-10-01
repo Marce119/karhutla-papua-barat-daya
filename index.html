@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boardgame Karhutla Papua Barat Daya - Impostor Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #090d16; color: #f8fafc; }
+        .glass-panel { background: rgba(15, 23, 42, 0.90); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.12); }
+        .pawn-p1 { background-color: #ef4444; border-color: #fca5a5; }
+        .pawn-p2 { background-color: #3b82f6; border-color: #93c5fd; }
+        .pawn-p3 { background-color: #eab308; border-color: #fef08a; }
+        .pawn-p4 { background-color: #10b981; border-color: #6ee7b7; }
+        .pawn-p5 { background-color: #a855f7; border-color: #d8b4fe; }
+        .pawn-p6 { background-color: #ec4899; border-color: #fbcfe8; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-rose-500 selection:text-white">
+
+    <!-- HEADER -->
+    <header class="glass-panel sticky top-0 z-40 px-4 py-3 border-b border-slate-800 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-gradient-to-br from-rose-600 to-indigo-700 rounded-xl text-white shadow-lg">
+                    <i class="fa-solid fa-user-ninja text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-base md:text-xl font-black text-white tracking-wide flex items-center gap-2">
+                        BOARDGAME KARHUTLA PAPUA BARAT DAYA
+                        <span class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2.5 py-0.5 rounded-full font-bold">6 RONDE + CLUE SYSTEM</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Deduksi Impostor, Kartu Event Bencana & 13 Kartu Event Plus</p>
+                </div>
+            </div>
+
+            <!-- TOP STATS -->
+            <div id="top-stats-bar" class="hidden flex items-center space-x-4 bg-slate-900/90 px-4 py-2 rounded-2xl border border-slate-700">
+                <div class="text-center">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase">Kesehatan Lingkungan</div>
+                    <div id="stat-health" class="text-sm md:text-base font-black text-emerald-400">100%</div>
+                </div>
+                <div class="h-6 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase">Skor Tim</div>
+                    <div id="stat-score" class="text-sm md:text-base font-black text-amber-400">0</div>
+                </div>
+                <div class="h-6 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase">Ronde</div>
+                    <div id="stat-round" class="text-sm md:text-base font-black text-indigo-400">1 / 6</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl w-full mx-auto p-3 md:p-6 flex-grow flex flex-col justify-center">
+
+        <!-- SETUP MODAL (4-6 PLAYERS) -->
+        <div id="modal-setup" class="w-full max-w-lg mx-auto glass-panel p-6 md:p-8 rounded-3xl border border-slate-700 shadow-2xl relative my-auto">
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 bg-rose-500/10 text-rose-400 rounded-2xl border border-rose-500/30 mb-3">
+                    <i class="fa-solid fa-users-viewfinder text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white">Persiapan Tim & Mode Impostor</h2>
+                <p class="text-xs text-slate-400 mt-1">Pilih 4–6 pemain. Peran acak: Dokter, Polisi, Pemadam, Ketua Adat, Hakim, Warga. Impostor ditentukan rahasia!</p>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Jumlah Pemain:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="setPlayerCount(4)" id="pbtn-4" class="py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl border border-indigo-500 shadow-md">4 Pemain (1 Impostor)</button>
+                        <button type="button" onclick="setPlayerCount(5)" id="pbtn-5" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl border border-slate-700">5 Pemain (1 Impostor)</button>
+                        <button type="button" onclick="setPlayerCount(6)" id="pbtn-6" class="py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl border border-slate-700">6 Pemain (2 Impostor)</button>
+                    </div>
+                </div>
+
+                <div id="player-inputs-container" class="space-y-2.5 max-h-52 overflow-y-auto pr-1"></div>
+
+                <button type="button" onclick="startGameSession()" class="w-full bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-extrabold py-3.5 rounded-xl text-base shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Mulai Game & Pembagian Peran
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN DASHBOARD -->
+        <div id="gameplay-dashboard" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-5 w-full">
+
+            <!-- LEFT CONTROL PANEL -->
+            <div class="lg:col-span-4 flex flex-col space-y-4">
+
+                <!-- CEK PERAN -->
+                <div class="glass-panel p-3.5 rounded-2xl border border-slate-700 shadow-lg flex justify-between items-center">
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase">Cek Peran Rahasia</div>
+                        <div class="text-xs text-slate-300">Intip peran & status Impostor</div>
+                    </div>
+                    <button onclick="openCheckRoleModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-3 py-2 rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-eye"></i> Intip Peran
+                    </button>
+                </div>
+
+                <!-- DADU MOVEMENT -->
+                <div class="glass-panel p-4 rounded-2xl border border-slate-700 shadow-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs md:text-sm font-bold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-dice text-amber-400"></i> Dadu Wilayah
+                        </h3>
+                        <span id="turn-indicator" class="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
+                            Giliran: Pemain 1
+                        </span>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 mb-3 flex items-center justify-between">
+                        <div>
+                            <div class="text-[10px] text-slate-400 uppercase font-semibold">Hasil Dadu / Lokasi:</div>
+                            <div id="dice-result-text" class="text-sm font-black text-amber-400">-</div>
+                        </div>
+                        <div id="dice-box" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl text-slate-300">
+                            <i class="fa-solid fa-dice-d6"></i>
+                        </div>
+                    </div>
+
+                    <button onclick="rollDiceCurrentPlayer()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md">
+                        <i class="fa-solid fa-dice-three text-lg"></i> Kocok Dadu Pindah Titik
+                    </button>
+                </div>
+
+                <!-- INPUT KARTU BENCANA UTAMA (1-27) -->
+                <div class="glass-panel p-4 rounded-2xl border border-slate-700 shadow-lg">
+                    <h3 class="text-xs md:text-sm font-bold text-slate-200 mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-fire-extinguisher text-rose-500"></i> Kartu Event Utama (1–27)
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mb-3">Masukkan nomor kartu event (27 Kartu Bencana).</p>
+
+                    <div class="flex gap-2">
+                        <input type="number" id="input-event-number" min="1" max="27" placeholder="Nomor 1-27" class="bg-slate-900 border border-slate-700 text-white font-bold text-center text-sm rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        <button onclick="triggerEventByNumber()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition whitespace-nowrap shadow-md flex items-center gap-1.5">
+                            <i class="fa-solid fa-bolt"></i> Buka Event
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PANEL EVENT PLUS (HANYA AKTIF JIKA SALAH JAWAB - 13 KARTU) -->
+                <div id="panel-event-plus-trigger" class="glass-panel p-4 rounded-2xl border border-rose-500/50 bg-rose-950/20 shadow-lg relative opacity-50 pointer-events-none">
+                    <div class="flex items-center justify-between mb-1">
+                        <h3 class="text-xs font-bold text-rose-400 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Tempat Kartu Event Plus
+                        </h3>
+                        <span class="text-[9px] bg-rose-500/30 text-rose-300 px-2 py-0.5 rounded font-bold">13 Kartu</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mb-2">Terbuka khusus saat pemain **SALAH MEMILIH KEPUTUSAN**. Masukkan angka 1-13 untuk jawab Event Plus & dapatkan Clue Impostor!</p>
+                    <div class="flex gap-2">
+                        <input type="number" id="input-event-plus-number" min="1" max="13" placeholder="Kartu 1-13" class="bg-slate-900 border border-slate-700 text-white font-bold text-center text-sm rounded-xl px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <button onclick="triggerEventPlusByNumber()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition whitespace-nowrap shadow-md">
+                            Buka Event Plus
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ACTIVE EVENT DISPLAY -->
+                <div id="panel-active-event" class="hidden glass-panel p-4 rounded-2xl border border-slate-700 shadow-lg flex-grow flex flex-col justify-between space-y-3">
+                    <div>
+                        <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-700">
+                            <span id="card-event-badge" class="px-2.5 py-0.5 text-[10px] font-bold rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                Kartu Event #1
+                            </span>
+                            <span id="card-event-loc" class="text-xs font-semibold text-amber-400 flex items-center gap-1">
+                                <i class="fa-solid fa-location-dot"></i> Sorong
+                            </span>
+                        </div>
+
+                        <h3 id="card-event-title" class="text-xs md:text-sm font-bold text-amber-300 mb-2 leading-snug">Judul Bencana</h3>
+
+                        <div class="space-y-2 text-[11px]">
+                            <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                                <span class="font-bold text-slate-300 block mb-0.5">📖 Cerita:</span>
+                                <p id="card-event-story" class="text-slate-400 leading-relaxed">-</p>
+                            </div>
+                            <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                                <span class="font-bold text-slate-300 block mb-0.5">💥 Dampak:</span>
+                                <p id="card-event-impact" class="text-rose-300 leading-relaxed">-</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                                    <span class="font-bold text-indigo-300 block mb-0.5">📊 Data:</span>
+                                    <p id="card-event-data" class="text-slate-400 text-[10px]">-</p>
+                                </div>
+                                <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                                    <span class="font-bold text-amber-300 block mb-0.5">💬 Opini:</span>
+                                    <p id="card-event-opinion" class="text-slate-400 text-[10px]">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="dispatchNearestPionToEvent()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg">
+                        <i class="fa-solid fa-person-walking-arrow-right text-base"></i> Gerakkan Pion & Buka Keputusan
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL: INTERACTIVE MAP & OVERLAYS -->
+            <div class="lg:col-span-8 flex flex-col space-y-4">
+
+                <!-- PETA PAPUA BARAT DAYA -->
+                <div class="relative glass-panel rounded-3xl border border-slate-700 overflow-hidden shadow-2xl min-h-[460px] md:min-h-[520px] flex items-center justify-center">
+
+                    <img id="map-image" src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80" alt="Peta Papua Barat Daya" class="w-full h-full object-cover min-h-[460px] filter brightness-90 contrast-105">
+
+                    <div id="map-pins-container" class="absolute inset-0 pointer-events-none"></div>
+
+                    <!-- CUSTOM MAP UPLOADER -->
+                    <div class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700 text-xs flex items-center gap-2 z-10 shadow-lg">
+                        <i class="fa-solid fa-image text-amber-400"></i>
+                        <span class="text-slate-300 font-semibold text-[11px]">Ubah Gambar Peta:</span>
+                        <label class="cursor-pointer bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg transition">
+                            Pilih File
+                            <input type="file" accept="image/*" class="hidden" onchange="uploadCustomMapImage(event)">
+                        </label>
+                    </div>
+
+                    <!-- MODAL DECISION PHASE -->
+                    <div id="modal-decision" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-30 p-4 md:p-6 flex flex-col justify-between">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[10px] md:text-xs font-bold text-amber-400 uppercase tracking-wider">Fase Analisis & Keputusan</span>
+                                <h3 class="text-xs md:text-base font-black text-white">Kartu Penanggulangan Karhutla</h3>
+                            </div>
+                            <div class="flex items-center space-x-2 bg-rose-950/90 border border-rose-800 px-3.5 py-1.5 rounded-2xl shadow-inner">
+                                <i class="fa-solid fa-stopwatch text-rose-400 text-lg animate-pulse"></i>
+                                <div>
+                                    <div class="text-[9px] text-rose-300 font-bold uppercase leading-none">Waktu</div>
+                                    <div id="timer-text" class="text-base md:text-lg font-black text-rose-400 leading-none">1:30</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-1 flex-grow overflow-y-auto">
+                            <!-- OPTION A -->
+                            <div onclick="selectDecisionOption(0)" class="cursor-pointer bg-slate-900/90 hover:bg-slate-800 border-2 border-slate-800 hover:border-amber-500 rounded-2xl p-3 flex flex-col justify-between transition group shadow-lg">
+                                <div>
+                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-800 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 transition">Pilihan A</span>
+                                    <p id="opt-0-text" class="text-xs text-slate-300 leading-relaxed mt-2 mb-3">-</p>
+                                </div>
+                                <div class="border-t border-slate-800 pt-2">
+                                    <span class="text-[10px] font-bold text-slate-400 block mb-1">Token Logistik:</span>
+                                    <div id="opt-0-tokens" class="text-xs text-amber-300 font-bold"></div>
+                                </div>
+                            </div>
+                            <!-- OPTION B -->
+                            <div onclick="selectDecisionOption(1)" class="cursor-pointer bg-slate-900/90 hover:bg-slate-800 border-2 border-slate-800 hover:border-amber-500 rounded-2xl p-3 flex flex-col justify-between transition group shadow-lg">
+                                <div>
+                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-800 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 transition">Pilihan B</span>
+                                    <p id="opt-1-text" class="text-xs text-slate-300 leading-relaxed mt-2 mb-3">-</p>
+                                </div>
+                                <div class="border-t border-slate-800 pt-2">
+                                    <span class="text-[10px] font-bold text-slate-400 block mb-1">Token Logistik:</span>
+                                    <div id="opt-1-tokens" class="text-xs text-amber-300 font-bold"></div>
+                                </div>
+                            </div>
+                            <!-- OPTION C -->
+                            <div onclick="selectDecisionOption(2)" class="cursor-pointer bg-slate-900/90 hover:bg-slate-800 border-2 border-slate-800 hover:border-amber-500 rounded-2xl p-3 flex flex-col justify-between transition group shadow-lg">
+                                <div>
+                                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-800 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 transition">Pilihan C</span>
+                                    <p id="opt-2-text" class="text-xs text-slate-300 leading-relaxed mt-2 mb-3">-</p>
+                                </div>
+                                <div class="border-t border-slate-800 pt-2">
+                                    <span class="text-[10px] font-bold text-slate-400 block mb-1">Token Logistik:</span>
+                                    <div id="opt-2-tokens" class="text-xs text-amber-300 font-bold"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL EVENT PLUS QUESTION -->
+                    <div id="modal-event-plus" class="hidden absolute inset-0 bg-slate-950/98 backdrop-blur-md z-40 p-6 flex flex-col justify-between overflow-y-auto">
+                        <div class="border-b border-rose-800 pb-3">
+                            <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">Kartu Event Plus</span>
+                            <h3 id="event-plus-title" class="text-base font-black text-white mt-0.5">Soal Event Plus</h3>
+                        </div>
+
+                        <div class="my-4 space-y-4">
+                            <p id="event-plus-question" class="text-sm font-bold text-amber-300 leading-relaxed">-</p>
+                            <div class="space-y-2">
+                                <button onclick="answerEventPlus('A')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-700 p-3 rounded-xl text-xs text-slate-200 transition" id="ep-opt-a">A. -</button>
+                                <button onclick="answerEventPlus('B')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-700 p-3 rounded-xl text-xs text-slate-200 transition" id="ep-opt-b">B. -</button>
+                                <button onclick="answerEventPlus('C')" class="w-full text-left bg-slate-900 hover:bg-slate-800 border border-slate-700 p-3 rounded-xl text-xs text-slate-200 transition" id="ep-opt-c">C. -</button>
+                            </div>
+                        </div>
+
+                        <button onclick="closeEventPlusModal()" class="bg-slate-800 text-slate-400 text-xs py-2 rounded-xl">Batal</button>
+                    </div>
+
+                    <!-- MODAL CLUE DISPLAY (SETELAH JAWAB BENAR EVENT PLUS) -->
+                    <div id="modal-clue-display" class="hidden absolute inset-0 bg-slate-950/98 backdrop-blur-md z-50 p-6 flex flex-col justify-center items-center text-center">
+                        <div class="w-16 h-16 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center text-3xl mb-3">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <span class="text-xs font-extrabold text-amber-400 uppercase tracking-widest">CLUE IMPOSTOR BUKA!</span>
+                        <h3 class="text-lg font-black text-white mt-1 mb-2">Petunjuk Rahasia Impostor</h3>
+                        <div class="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl max-w-md w-full mb-4">
+                            <p id="clue-text-content" class="text-sm font-bold text-amber-300 leading-relaxed">"Clue Impostor..."</p>
+                        </div>
+                        <button onclick="closeClueModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-lg">
+                            Paham, Simpan Rahasia Ini!
+                        </button>
+                    </div>
+
+                    <!-- MODAL VOTING IMPOSTOR (RONDE 3, 5, 6) -->
+                    <div id="modal-voting" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-40 p-6 flex flex-col justify-between">
+                        <div class="text-center">
+                            <span id="voting-round-title" class="text-xs font-bold text-rose-400 uppercase tracking-wider">Fase Menebak Impostor</span>
+                            <h3 class="text-lg font-black text-white mt-1">Siapa yang Kalian Curigai Sebagai IMPOSTOR?</h3>
+                            <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">Diskusikan clue yang didapat! Voting pemain untuk didiskualifikasi atau lewati jika belum yakin.</p>
+                        </div>
+
+                        <div id="voting-candidates-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3 my-4"></div>
+
+                        <div class="flex justify-center items-center gap-3">
+                            <button onclick="skipVotingRound()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-6 py-2.5 rounded-xl text-xs border border-slate-700 transition flex items-center gap-2 shadow-lg">
+                                <i class="fa-solid fa-forward"></i> Lewati Voting (Lanjut Game)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ROUND RESULT MODAL -->
+                    <div id="modal-round-result" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-40 p-6 flex flex-col justify-center items-center text-center">
+                        <div id="result-icon-box" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-3"></div>
+                        <h3 id="result-title" class="text-xl font-extrabold text-white mb-2">Evaluasi Ronde</h3>
+                        <p id="result-desc" class="text-xs md:text-sm text-slate-300 max-w-md mb-4 leading-relaxed">-</p>
+
+                        <div class="flex items-center gap-6 bg-slate-900 border border-slate-800 px-6 py-3 rounded-2xl mb-6">
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase">Perubahan Skor</div>
+                                <div id="res-score-diff" class="text-base font-black text-amber-400">+0</div>
+                            </div>
+                            <div class="h-8 w-px bg-slate-800"></div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-bold uppercase">Kesehatan Lingkungan</div>
+                                <div id="res-health-diff" class="text-base font-black text-emerald-400">-0%</div>
+                            </div>
+                        </div>
+
+                        <button onclick="proceedFromRoundResult()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl text-xs md:text-sm transition shadow-lg flex items-center gap-2">
+                            Lanjut Ronde <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- GAME OVER MODAL -->
+                    <div id="modal-game-over" class="hidden absolute inset-0 bg-slate-950/98 backdrop-blur-lg z-50 p-6 flex flex-col justify-center items-center text-center">
+                        <div class="p-4 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30 mb-3 text-4xl">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <h2 class="text-2xl font-black text-white mb-1">Permainan 6 Ronde Selesai!</h2>
+                        <p class="text-xs text-slate-400 mb-4 max-w-sm">Evaluasi Akhir Simulasi Penanggulangan Kebakaran Hutan & Lahan</p>
+
+                        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full max-w-xs space-y-3 mb-6">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Skor Akhir Tim:</span>
+                                <span id="final-score-val" class="text-base font-black text-amber-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Kesehatan Lingkungan:</span>
+                                <span id="final-health-val" class="text-base font-black text-emerald-400">100%</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Identitas Impostor:</span>
+                                <span id="final-impostor-list" class="text-xs font-bold text-rose-400">-</span>
+                            </div>
+                        </div>
+
+                        <button onclick="resetGameToSetup()" class="bg-gradient-to-r from-rose-600 to-indigo-600 text-white font-bold px-6 py-3 rounded-xl text-xs md:text-sm shadow-lg">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Mainkan Kembali
+                        </button>
+                    </div>
+
+                    <!-- CHECK ROLE MODAL -->
+                    <div id="modal-check-role" class="hidden absolute inset-0 bg-slate-950/98 backdrop-blur-md z-50 p-6 flex flex-col justify-center items-center text-center">
+                        <div class="max-w-xs w-full bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl">
+                            <h3 class="text-base font-extrabold text-white mb-3">Intip Peran Rahasia:</h3>
+                            <select id="select-role-player" onchange="displaySecretRole()" class="w-full bg-slate-800 border border-slate-700 text-amber-400 font-bold text-xs rounded-xl p-2.5 mb-4">
+                            </select>
+
+                            <div id="secret-role-display-box" class="hidden p-4 rounded-2xl border mb-4">
+                                <div id="secret-role-badge" class="text-xs font-black uppercase mb-1">PERAN KAMU</div>
+                                <p id="secret-role-desc" class="text-[11px] leading-relaxed text-slate-300"></p>
+                            </div>
+
+                            <button onclick="closeCheckRoleModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl text-xs transition">
+                                Sembunyikan & Tutup
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PLAYERS POSITIONS STATUS -->
+                <div class="glass-panel p-4 rounded-2xl border border-slate-700 shadow-lg">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
+                        <i class="fa-solid fa-location-crosshairs text-amber-400 mr-1"></i> Posisi & Peran Pemain:
+                    </h3>
+                    <div id="players-status-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5"></div>
+                </div>
+
+                <!-- LOG FEED -->
+                <div class="glass-panel p-3 rounded-2xl border border-slate-700 text-xs">
+                    <div class="font-bold text-slate-400 uppercase text-[10px] mb-1">📜 Catatan Log Simulasi:</div>
+                    <div id="activity-log" class="h-16 overflow-y-auto space-y-1 text-[11px] text-slate-300 font-mono">
+                        <p class="text-slate-500">[Sistem] Permainan siap dimulai.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="glass-panel text-center py-2 border-t border-slate-800 text-[11px] text-slate-400">
+        Boardgame Karhutla Papua Barat Daya (6 Ronde + Event Plus System) &copy; 2026
+    </footer>
+
+    <!-- SCRIPT GAMELOGIC -->
+    <script>
+        // LOKASI REGIONAL PAPUA BARAT DAYA
+        const REGION_LOCATIONS = [
+            { id: "sorong", name: "Kota & Kab. Sorong", x: 30, y: 32 },
+            { id: "tambrauw", name: "Tambrauw", x: 48, y: 24 },
+            { id: "maybrat", name: "Maybrat", x: 50, y: 40 },
+            { id: "sorsel", name: "Sorong Selatan", x: 42, y: 48 },
+            { id: "rajaampat", name: "Raja Ampat", x: 22, y: 20 },
+            { id: "tekno", name: "Skenario Gabungan", x: 38, y: 38 }
+        ];
+
+        // DAFTAR PERAN UTAMA (6 PERAN)
+        const ROLE_LIST = [
+            "Dokter", "Polisi", "Pemadam kebakaran", "Ketua adat", "Hakim", "Warga sipil"
+        ];
+
+        // DATABASE CLUE SESUAI PERAN (DIBERIKAN JIKA BENAR DI EVENT PLUS)
+        const CLUE_DATABASE = {
+            "Dokter": ["Sumpah Hipokrates", "ninuninu", "Acala Ibrutinib", "Steril", "P3k"],
+            "Polisi": ["Penyelidikan", "Wiuw Wiuw", "Anggota", "Tkp", "Pistol", "Merah-Biru"],
+            "Pemadam kebakaran": ["Air", "Selang", "Hydrant", "Lepas Cincin", "Yudha Brama Jaya"],
+            "Ketua adat": ["Kampung", "marga", "Isti(masalah)", "Musyawarah", "Wejangan", "Denda"],
+            "Hakim": ["Consensus Gavel", "Keputusan", "tok tok tok", "Toga", "Inzake / Yurisprudensi"],
+            "Warga sipil": ["Rumah", "Biasa", "Orang", "Ktp", "Domisili"]
+        };
+
+        // DATABASE 27 KARTU EVENT BENCANA UTAMA
+        const EVENT_CARDS_DATABASE = [
+            { id: 1, locId: "sorong", title: "Percikan di Lereng Hutan Lindung Sorong", story: "Pembakaran sampah rumah tangga di tepi batas pemukiman merembet ke serasah kering hutan lindung akibat angin kencang...", impact: "Asap tebal mengganggu jarak pandang Sorong-Aimas; ancaman resapan air.", data: "Kecepatan angin 28 knot.", opinion: "Ulah proyek pelebaran jalan.", options: [{ text: "Mengerahkan mobil pemadam dan menutup sementara ruas jalan poros Sorong–Aimas.", correct: true, token: "Air dan Tenaga" }, { text: "Mengerahkan warga membuat barisan ember air estafet.", correct: false, token: "Tenaga & Makanan" }, { text: "Fokus semprotan air di jalan poros.", correct: false, token: "Makanan & Air" }] },
+            { id: 2, locId: "sorong", title: "Kekeringan Gambut Klamono", story: "El Niño dan puntung rokok memicu kebakaran mengancam pipa minyak Pertamina.", impact: "Berisiko meledak.", data: "Tekanan pipa turun 15 PSI.", opinion: "Gosip sabotase orang dalam.", options: [{ text: "Tim investigasi memeriksa seluruh pegawai Pertamina.", correct: false, token: "Obat & Air" }, { text: "Berkoordinasi dengan Pertamina mematikan katup pipa & pendinginan busa kimia.", correct: true, token: "Air dan Tenaga" }, { text: "Membiarkan titik api kecil.", correct: false, token: "Tenaga & Makanan" }] },
+            { id: 3, locId: "sorong", title: "Buka Lahan Palawija di Seget", story: "Tebas-bakar tradisional kehilangan kendali menuju hutan mangrove.", impact: "5 hektar vegetasi penyangga ludes.", data: "5 hektar mangrove musnah.", opinion: "Investor sengaja membakar lahan.", options: [{ text: "Memanggil & memeriksa investor.", correct: false, token: "Obat & Air" }, { text: "Memperluas area pembukaan lahan sebagai firebreak.", correct: false, token: "Obat & Tenaga" }, { text: "Mendukung gotong-royong warga dengan alat pemadam portable dan logistik pangan.", correct: true, token: "Makanan dan Tenaga" }] },
+            { id: 4, locId: "sorong", title: "Hutan Panas Koridor Salawati", story: "Ground fire di hutan rawa musiman sulit dipadamkan.", impact: "Asap pekat menyelimuti jalur pelayaran.", data: "Suhu gambut 65°C.", opinion: "Uji coba senjata militer rahasia.", options: [{ text: "Menghentikan latihan militer rahasia.", correct: false, token: "Tenaga" }, { text: "Mengerahkan eskavator amfibi menggali kanal basah.", correct: true, token: "Tenaga" }, { text: "Menyiram permukaan rawa air bertekanan tinggi.", correct: false, token: "Tenaga" }] },
+            { id: 5, locId: "sorong", title: "Api Unggun di Batas Makbon", story: "Bara api unggun ditiup angin menyambar ranting kering.", impact: "Satwa malam panik bermigrasi.", data: "40 satwa malam bermigrasi.", opinion: "Pertanda buruk pelanggaran sasi.", options: [{ text: "Memasang jaring pengaman & perangkap besar.", correct: false, token: "Makanan" }, { text: "Ritual tolak bala mengusir pertanda buruk.", correct: false, token: "Tenaga" }, { text: "Operasi penyisiran hutan bersama jagawana memadamkan bara & memandu satwa.", correct: true, token: "Tenaga" }] },
+            { id: 6, locId: "tambrauw", title: "Kebakaran Karst Lembah Kebar", story: "Padang savana Kebar terbakar akibat sisa api dan angin.", impact: "Habitat rumput kebar terancam.", data: "Kelembaban udara turun 32%.", opinion: "Sengaja dibakar untuk basmi hama.", options: [{ text: "Memberlakukan larangan sasi.", correct: false, token: "Makanan" }, { text: "Mengerahkan regu pemadam darurat & jaring sedimentasi lumpur abu.", correct: true, token: "Air dan Tenaga" }, { text: "Mengeringkan sisa rawa.", correct: false, token: "Tenaga" }] },
+            { id: 7, locId: "tambrauw", title: "Ancaman Sarang Burung Pintar", story: "Kebakaran merambat ke zona pameran burung Namdur.", impact: "Sarang burung terancam.", data: "Sekat bakar 1,2 km dibuat ranger.", opinion: "Peneliti asing tidak hati-hati.", options: [{ text: "Mendanai ranger adat membangun sekat bakar manual.", correct: true, token: "Tenaga" }, { text: "Mengandalkan ritual sasi rimba.", correct: false, token: "Tenaga dan Makanan" }, { text: "Menghentikan aktivitas peneliti asing.", correct: false, token: "Tenaga" }] },
+            { id: 8, locId: "tambrauw", title: "Jalur Loging Terisolir Fef", story: "Limbah tebangan kayu terbakar akibat gesekan kabel penarik.", impact: "Pekerja luka bakar berat, jembatan kayu lumpuh.", data: "3 jembatan kayu lumpuh.", opinion: "Kabel putus disambar petir vulkanik.", options: [{ text: "Mengerahkan ekskavator & regu teknis membersihkan pohon & perbaiki jembatan.", correct: true, token: "Tenaga" }, { text: "Memberlakukan denda sasi ke perusahaan logging.", correct: false, token: "Air, Makanan" }, { text: "Memanggil BMKG menyelidiki petir vulkanik.", correct: false, token: "Tenaga, Makanan" }] },
+            { id: 9, locId: "tambrauw", title: "Kebakaran Pesisir Penyu Abun", story: "Pembersihan kebun kelapa merembet ke pantai bertelur penyu belimbing.", impact: "Suhu pasir meningkat.", data: "Suhu pasir naik 4°C.", opinion: "Ulah nelayan bagan malam.", options: [{ text: "Menyegel pantai Jamursba Medi dengan sasi.", correct: false, token: "Makanan dan Air" }, { text: "Memadamkan api vegetasi pantai dengan pompa portabel & menyiram area sarang.", correct: true, token: "Air dan Tenaga" }, { text: "Menangkap seluruh nelayan bagan malam.", correct: false, token: "Makanan dan Tenaga" }] },
+            { id: 10, locId: "tambrauw", title: "Kebakaran Hutan Sagu Tambrauw", story: "Hutan dikeringkan paksa & dibakar untuk lahan ilegal.", impact: "Hilangnya dusun sagu sumber pangan warga.", data: "12 dusun sagu hancur.", opinion: "Demi proyek transmigrasi.", options: [{ text: "Deklarasi sasi mutlak melarang panen sagu.", correct: false, token: "Tenaga dan Air" }, { text: "Mengirimkan bantuan pangan darurat & mengerahkan tim pemadam.", correct: true, token: "Makanan dan Tenaga" }, { text: "Membentuk panitia audiensi jangka panjang.", correct: false, token: "Air dan Makanan" }] },
+            { id: 11, locId: "maybrat", title: "Asap di Tepi Danau Ayamaru", story: "Alang-alang surut dibakar, membesar ke hutan tepian danau.", impact: "Ikan pelangi endemik terganggu lumpur abu.", data: "Air danau menyusut 1,8 meter.", opinion: "Ikan sengaja diracun.", options: [{ text: "Sasi melarang warga mendekati danau.", correct: false, token: "Makanan" }, { text: "Mengerahkan pemadam darurat & jaring sedimentasi lumpur abu.", correct: true, token: "Air dan Tenaga" }, { text: "Mengeringkan sebagian rawa.", correct: false, token: "Tenaga" }] },
+            { id: 12, locId: "maybrat", title: "Sekat Bakar Adat Ayawasi", story: "Kebakaran kebun tetangga berhasil dipadamkan gotong royong adat.", impact: "Pemuda luka bakar ringan.", data: "Puluhan hektar hutan selamat.", opinion: "Aturan adat memanggil angin.", options: [{ text: "Memanggil pemilik kebun ke polisi.", correct: false, token: "Tenaga" }, { text: "Menghentikan gotong royong diganti ritual.", correct: false, token: "Tenaga" }, { text: "Mengapresiasi gotong-royong dengan menyuplai logistik perlengkapan pemadam.", correct: true, token: "Makanan dan Tenaga" }] },
+            { id: 13, locId: "maybrat", title: "Sengketa Lahan Aitinyo", story: "Pembakaran semak di tapal batas memicu konflik horizontal.", impact: "Konflik antar-marga meningkat.", data: "Konflik naik 40%.", opinion: "Pemerintah sebut hanya asap jerami.", options: [{ text: "Memfasilitasi mediation damai sambil menerjunkan tim pemadam.", correct: true, token: "Tenaga" }, { text: "Menyerahkan penyelesaian mutlak denda dewan adat.", correct: false, token: "Tenaga" }, { text: "Mempercayai bahwa itu hanya jerami biasa.", correct: false, token: "Tenaga" }] },
+            { id: 14, locId: "maybrat", title: "Kebakaran Jalur Pipa Air Mare", story: "Api melahap pipa paralon air bersih gravitasi 3 kampung.", impact: "Krisis air bersih.", data: "Pipa paralon 450 meter leleh.", opinion: "Akibat gempa bumi kecil.", options: [{ text: "Melarang warga memperbaiki pipa & buat ritual.", correct: false, token: "Tenaga" }, { text: "Membiarkan pipa menunggu investigasi gempa.", correct: false, token: "Tenaga" }, { text: "Mengirim pipa paralon pengganti & menerjunkan teknisi bersama warga.", correct: true, token: "Barang dan Tenaga" }] },
+            { id: 15, locId: "sorsel", title: "Bara Rawa Gambut Teminabuan", story: "Pembakaran sisa sagu memicu kebakaran dalam tanah (peat fire).", impact: "Asap belerang tebal bertahapan.", data: "Api membara kedalaman 1,5 meter.", opinion: "Pembiaran kebun sawit ilegal.", options: [{ text: "Unit pompa injeksi air bertekanan tinggi hingga kedalaman 1,5 meter.", correct: true, token: "Air dan Tenaga" }, { text: "Aturan sasi larangan menginjak gambut.", correct: false, token: "Tenaga" }, { text: "Tim investigasi konspirasi sawit.", correct: false, token: "Air & Makanan" }] },
+            { id: 16, locId: "sorsel", title: "Kebakaran Hutan Sagu Inanwatan", story: "Api rambatan pembersihan lahan mengancam hutan sagu liar.", impact: "Ketahanan pangan darurat terancam.", data: "Cadangan pati sagu tinggal 7 hari.", opinion: "Persaingan bisnis pengumpul sagu.", options: [{ text: "Interogasi seluruh pengumpul sagu.", correct: false, token: "Tenaga" }, { text: "Menunggu bantuan luar tanpa padamkan api.", correct: false, token: "1 Tenaga, 2 Air, 4 Makanan, 1 Obat" }, { text: "Mendistribusikan cadangan pangan alternatif & regu pemadam.", correct: true, token: "Makanan dan Tenaga" }] },
+            { id: 17, locId: "sorsel", title: "Kebakaran Hutan Mangrove Kokoda", story: "Ulah pembuat arang membakar pelepah kering mangrove & melukai pekerja.", impact: "Erosi tanggul muara & pembuat arang luka.", data: "Garis pantai terkikis 2,3 meter.", opinion: "Tercemar limbah hulu sungai.", options: [{ text: "Denda adat & tutup total wilayah.", correct: false, token: "Tenaga" }, { text: "Mobilisasi tim pemadam pesisir & tanam kembali bibit mangrove.", correct: true, token: "Tenaga dan Barang" }, { text: "Tim uji laboratorium air.", correct: false, token: "Tenaga" }] },
+            { id: 18, locId: "sorsel", title: "Jalur Sungai Kais Terisolasi Asap", story: "Kebakaran tepi sungai menutup jalur longboat.", impact: "Pasokan bahan pokok terhenti 2 hari.", data: "Jarak pandang di bawah 3 meter.", opinion: "Uap air biasa dari ladang.", options: [{ text: "Membagikan masker khusus & pandu longboat dengan GPS darurat.", correct: true, token: "Barang dan Tenaga" }, { text: "Ritual pemanggilan angin darat.", correct: false, token: "Tenaga" }, { text: "Mengabaikan laporan.", correct: false, token: "Tenaga" }] },
+            { id: 19, locId: "sorsel", title: "Api Pembuatan Perahu Kalitami", story: "Pelunakan kayu perahu dengan api tradisional merembet.", impact: "Pohon kayu besi (Intsia) besar hangus.", data: "4 pohon kayu besi besar hangus.", opinion: "Puntung rokok pendatang ilegal.", options: [{ text: "Mengabaikan kebakaran & patroli laut.", correct: false, token: "Tenaga" }, { text: "Denda adat berat pendatang.", correct: false, token: "Tenaga" }, { text: "Mengerahkan regu pemadam portabel & pendinginan kayu besi.", correct: true, token: "Air dan Tenaga" }] },
+            { id: 20, locId: "rajaampat", title: "Bara di Pulau Karst Waigeo", story: "Api menjalar di batu kapur membakar sarang Cendrawasih & relawan jatuh.", impact: "Sarang Cendrawasih terbakar, relawan luka.", data: "Kemiringan tebing 65 derajat.", opinion: "Puntung rokok pelancong.", options: [{ text: "Mengerahkan kapal patroli pemadam dari laut menyemprot air bertekanan tinggi.", correct: true, token: "Air dan Tenaga" }, { text: "Warga mendaki tebing curam Bawa ember.", correct: false, token: "Air, Tenaga, Makanan" }, { text: "Melarang pariwisata Waigeo.", correct: false, token: "Air & Obat" }] },
+            { id: 21, locId: "rajaampat", title: "Kebakaran Savana Puncak Wayag", story: "Puntung rokok membakar semak puncak bukit Wayag.", impact: "Keindahan Wayag rusak menghitam.", data: "300 m² rumput endemik terbakar.", opinion: "Konspirasi izin tambang.", options: [{ text: "Menyegel Wayag dengan sasi.", correct: false, token: "Makanan & Air" }, { text: "Pansus investigasi tambang.", correct: false, token: "Air & Makanan" }, { text: "Tim darurat speedboat membawa jetshooter ke puncak bukit Wayag.", correct: true, token: "Air dan Tenaga" }] },
+            { id: 22, locId: "rajaampat", title: "Api Kebun Kelapa Batanta", story: "Pembakaran sabut kelapa pengusir nyamuk menyebar ke lereng.", impact: "Air terjun Batanta kotor abu.", data: "Kekeruhan air 120 NTU.", opinion: "Salahkan sawit pulau tetangga.", options: [{ text: "Membantu memadamkan api sabut & bangun filter penjernih air terjun.", correct: true, token: "Barang dan Tenaga" }, { text: "Sanksi adat warga pesisir.", correct: false, token: "Obat & Air" }, { text: "Tuntut ganti rugi sawit.", correct: false, token: "Air & Tenaga" }] },
+            { id: 23, locId: "rajaampat", title: "Darurat Konservasi Pulau Misool", story: "Kebakaran mendekati pos penjaga & mangrove.", impact: "Patroli bom ikan berkurang.", data: "Patroli laut turun 65%.", opinion: "Pelaku bom ikan bikin kebakaran.", options: [{ text: "Sasi perlindungan total Buffel Hoorn.", correct: false, token: "Obat & Tenaga" }, { text: "Abaikan kebakaran fokus patroli.", correct: false, token: "Tenaga" }, { text: "Mengerahkan tim pemadam khusus keanekaragaman hayati ke Buffel Hoorn.", correct: true, token: "Tenaga" }] },
+            { id: 24, locId: "rajaampat", title: "Cagar Alam Pegunungan Waigeo Barat", story: "Gesekan cabang bambu kering memicu api.", impact: "Katak Waigeo & anggrek langka terancam.", data: "Spesies langka terancam.", opinion: "Akal-akalan tutup isu krisis iklim.", options: [{ text: "Sasi perlindungan total.", correct: false, token: "Air & Obat" }, { text: "Mengerahkan tim pemadam khusus keanekaragaman hayati buat sekat bakar.", correct: true, token: "Tenaga" }, { text: "Tim debat publik krisis iklim.", correct: false, token: "Air & Tenaga" }] },
+            { id: 25, locId: "tekno", title: "Patroli Drone Terkendala Asap", story: "Drone deteksi 4 hotspot tapi terhalang asap pekat.", impact: "Navigasi darat melintasi hutan.", data: "Kamera sensor panas gagal.", opinion: "Sinyal SOS pendaki tersesat.", options: [{ text: "Batal operasi pemadaman.", correct: false, token: "Tenaga" }, { text: "Kombinasi kompas darat manual & tim penjelajah verifikasi koordinat.", correct: true, token: "6 Tenaga, 4 Air, 3 Makanan, 1 Obat" }, { text: "Paksa terbangkan drone.", correct: false, token: "Tenaga" }] },
+            { id: 26, locId: "tekno", title: "Operasi Water Bombing Maybrat-Tambrauw", story: "Kebakaran di lembah tanpa akses jalan darat.", impact: "Logistik avtur helikopter BNPB.", data: "Konsumsi avtur 300L/jam.", opinion: "Operasi water bombing pilih kasih.", options: [{ text: "Hentikan helikopter suruh warga jalan kaki.", correct: false, token: "Tenaga" }, { text: "Tumpahkan air ke pemukiman.", correct: false, token: "Air" }, { text: "Optimalkan rute helikopter dari telaga terdekat & transparansi informasi.", correct: true, token: "5 Tenaga, 6 Air, 3 Makanan, 1 Obat" }] },
+            { id: 27, locId: "sorsel", title: "Hujan Adat dan Ritual Marga", story: "Tetua adat pimpin ritual & mobilisasi pemuda memutus api.", impact: "Meningkatkan moral warga.", data: "85 pemuda dikerahkan.", opinion: "Tetua adat protes ke aparat.", options: [{ text: "Hormati ritual kearifan lokal & kerahkan 85 pemuda buat sekat bakar manual.", correct: true, token: "6 Tenaga, 3 Air, 3 Makanan, 1 Obat" }, { text: "Larang ritual adat.", correct: false, token: "Tenaga" }, { text: "Andalkan ritual tanpa mobilisasi pemuda.", correct: false, token: "Tenaga" }] }
+        ];
+
+        // DATABASE KARTU EVENT PLUS (LENGKAP 13 KARTU)
+        const EVENT_PLUS_DATABASE = [
+            { id: 1, title: "Arti Adat Sasi", q: "28. Apa arti harfiah dari adat “Sasi” di Maluku & Papua?", opts: { A: "Larangan atau pembatasan mengambil hasil alam dalam jangka waktu tertentu.", B: "Pesta rakyat setelah panen hasil laut & darat.", C: "Larangan untuk mengambil hasil alam tanpa meminta izin pada tetua adat." }, correct: "A" },
+            { id: 2, title: "Prosesi Adat Sasi", q: "29. Apa nama prosesi adat ketika aturan sasi resmi diberlakukan di suatu wilayah?", opts: { A: "Buka Sasi", B: "Tutup Sasi", C: "Buka-Tutup Sasi" }, correct: "B" },
+            { id: 3, title: "Sasi & Kebakaran Hutan", q: "30. Bagaimana Sasi Hutan/Darat membantu mencegah kebakaran hutan (fire) saat musim kemarau?", opts: { A: "Menebang semua pohon kering di hutan.", B: "Mengalirkan minyak ke dalam hutan.", C: "Melarang pembukaan lahan menggunakan api dan membatasi aktivitas manusia di hutan" }, correct: "C" },
+            { id: 4, title: "Fenomena Iklim El Niño", q: "31. Fenomena iklim global yang sering menyebabkan musim kemarau panjang dan kekeringan ekstrim di Indonesia adalah?", opts: { A: "El Niño", B: "La Niña", C: "El Niña" }, correct: "A" },
+            { id: 5, title: "Peran Lembaga Adat Kewang", q: "32. Lembaga adat Kewang memiliki peran penting dalam Sasi, yaitu sebagai?", opts: { A: "Pembeli hasil panen warga", B: "Peneliti laboratorium", C: "Penjaga dan pengawas pelaksanaan hukum Sasi di lapangan" }, correct: "C" },
+            { id: 6, title: "Fungsi Sasi Mata Air", q: "33. Apa fungsi utama dari \"Sasi Mata Air\" saat menghadapi ancaman kekeringan?", opts: { A: "Melindungi, melestarikan, dan menjaga ketersediaan cadangan air bersih.", B: "Menutup mata air dengan semen.", C: "Menguras habis air sebelum musim kemarau tiba." }, correct: "A" },
+            { id: 7, title: "Dampak Asap Karhutla", q: "34. Dampak buruk dari asap Karhutla terhadap kesehatan masyarakat adalah timbulnya penyakit?", opts: { A: "Osteoporosis", B: "Infeksi Saluran Pernapasan Akut", C: "Infeksi saluran Pencernaan" }, correct: "B" },
+            { id: 8, title: "Area Pelaksanaan Sasi", q: "35. Sasi biasanya dilakukan di area atau tempat mana saja?", opts: { A: "Darat", B: "Laut", C: "Darat & Laut" }, correct: "C" },
+            { id: 9, title: "Larangan Api Musim Kemarau", q: "36. Mengapa aktivitas membuat api unggun atau membakar sampah di kawasan Sasi Darat dilarang keras saat musim kemarau?", opts: { A: "Karena asap api bisa merusak warna daun", B: "Karena angin kencang dan dedaunan kering memicu titik api Karhutla", C: "Karena api bisa mengundang hewan liar" }, correct: "B" },
+            { id: 10, title: "Dampak FOMO Camping di Sasi", q: "37. Tren media sosial menunjukkan tempat camping baru di area hutan terlindungi Sasi. Banyak orang berbondong-bondong ke sana demi konten (FOMO). Dampak buruk apa yang paling mungkin terjadi jika wisatawan tidak mematuhi aturan Sasi?", opts: { A: "Meningkatnya sampah, potensi puntung rokok memicu kebakaran, dan hilangnya keasrian hutan", B: "Hutan menjadi lebih terkenal dan langsung berubah menjadi kota modern", C: "Pohon-pohon di hutan akan mati karena dibuat konten" }, correct: "A" },
+            { id: 11, title: "Pelanggaran Tabu Sasi", q: "38. Karena takut ketinggalan tren (FOMO) menjual komoditas kayu mahal saat musim kemarau, seorang pemuda nekat memanen hasil hutan di area yang sedang di-Sasi. Perilaku ini disebut?", opts: { A: "Keputusan investasi yang merugikan karena tidak meminta izin pada tetua adat", B: "Melanggar Tabu (Pelanggaran Sasi/adat) akibat terpengaruh kebiasaan buruk/FOMO", C: "Bentuk pelestarian budaya lokal seperti kayu adat" }, correct: "B" },
+            { id: 12, title: "Istilah Sasi Darat", q: "39. Sasi yang diterapkan di kawasan daratan, hutan, atau perkebunan disebut dengan?", opts: { A: "Sasi Pasir", B: "Sasi Darat", C: "Sasi Laut" }, correct: "B" },
+            { id: 13, title: "Tujuan Tutup Sasi", q: "40. Apa alasan utama dibalik larangan mengambil hasil alam selama periode Tutup Sasi?", opts: { A: "Untuk memberikan waktu bagi ekosistem memulihkan diri dan berkembang secara alami", B: "Agar harga komoditas hasil alam bisa dinaikkan secara drastis di pasar", C: "Karena sumber daya alam tersebut sedang mengalami keracunan bahan kimia" }, correct: "A" }
+        ];
+
+        // GAME STATE
+        let playerCount = 4;
+        let players = [];
+        let currentPlayerIdx = 0;
+        let activeCard = null;
+        let activeEventPlus = null;
+        let roundCounter = 1; // MAX 6 RONDE
+        let totalTeamScore = 0;
+        let environmentHealth = 100;
+        let timerInterval = null;
+        let remainingSeconds = 90;
+        let canTriggerEventPlus = false; // Hanya aktif jika salah jawab
+
+        const PAWN_CLASSES = ['pawn-p1', 'pawn-p2', 'pawn-p3', 'pawn-p4', 'pawn-p5', 'pawn-p6'];
+
+        function setPlayerCount(count) {
+            playerCount = count;
+            for(let i = 4; i <= 6; i++) {
+                const btn = document.getElementById(`pbtn-${i}`);
+                btn.className = (i === count) ? "py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl border border-indigo-500 shadow-md" : "py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl border border-slate-700";
+            }
+            renderPlayerInputs();
+        }
+
+        function renderPlayerInputs() {
+            const container = document.getElementById('player-inputs-container');
+            container.innerHTML = '';
+            for(let i = 1; i <= playerCount; i++) {
+                container.innerHTML += `
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold text-white border ${PAWN_CLASSES[i-1]} shadow">
+                            P${i}
+                        </div>
+                        <input type="text" id="input-pname-${i}" value="Pemain ${i}" class="bg-slate-900 border border-slate-700 text-white text-xs rounded-xl px-3 py-2 w-full font-semibold">
+                    </div>
+                `;
+            }
+        }
+
+        function startGameSession() {
+            players = [];
+            let rolesShuffled = [...ROLE_LIST].sort(() => Math.random() - 0.5);
+            let numImpostors = (playerCount === 6) ? 2 : 1;
+
+            // Generate Players
+            for(let i = 1; i <= playerCount; i++) {
+                const nameInput = document.getElementById(`input-pname-${i}`).value.trim() || `Pemain ${i}`;
+                players.push({
+                    id: i,
+                    name: nameInput,
+                    role: rolesShuffled[i-1],
+                    locId: "sorong",
+                    pawnClass: PAWN_CLASSES[i-1],
+                    isImpostor: false,
+                    isEliminated: false
+                });
+            }
+
+            // Acak Impostor
+            let indices = [...Array(playerCount).keys()].sort(() => Math.random() - 0.5);
+            for(let i = 0; i < numImpostors; i++) {
+                players[indices[i]].isImpostor = true;
+            }
+
+            currentPlayerIdx = 0;
+            roundCounter = 1;
+            totalTeamScore = 0;
+            environmentHealth = 100;
+            canTriggerEventPlus = false;
+
+            document.getElementById('modal-setup').classList.add('hidden');
+            document.getElementById('gameplay-dashboard').classList.remove('hidden');
+            document.getElementById('top-stats-bar').classList.remove('hidden');
+
+            updateStatsDisplay();
+            renderMapPinsAndPawns();
+            updatePlayersStatusGrid();
+            updateTurnIndicator();
+            populateCheckRoleSelect();
+
+            appendLog(`[Sistem] Game Dimulai! ${playerCount} Pemain, ${numImpostors} Impostor.`);
+            alert(`Game Dimulai!\n\nPeran telah dibagikan secara rahasia (${numImpostors} Impostor terpilih). Gunakan tombol "Intip Peran" untuk melihat peran masing-masing!`);
+        }
+
+        function populateCheckRoleSelect() {
+            const sel = document.getElementById('select-role-player');
+            sel.innerHTML = '<option value="">-- Pilih Nama Pemain --</option>';
+            players.forEach(p => {
+                sel.innerHTML += `<option value="${p.id}">${p.name} (Pion P${p.id})</option>`;
+            });
+        }
+
+        function openCheckRoleModal() {
+            document.getElementById('modal-check-role').classList.remove('hidden');
+            document.getElementById('secret-role-display-box').classList.add('hidden');
+            document.getElementById('select-role-player').value = "";
+        }
+
+        function closeCheckRoleModal() { document.getElementById('modal-check-role').classList.add('hidden'); }
+
+        function displaySecretRole() {
+            const val = document.getElementById('select-role-player').value;
+            if(!val) return;
+            const p = players.find(x => x.id === parseInt(val));
+            const box = document.getElementById('secret-role-display-box');
+            box.classList.remove('hidden');
+
+            if(p.isImpostor) {
+                box.className = "p-4 rounded-2xl border mb-4 bg-rose-950/80 border-rose-700 text-rose-200";
+                document.getElementById('secret-role-badge').textContent = `🥷 PERAN: ${p.role.toUpperCase()} (IMPOSTOR)`;
+                document.getElementById('secret-role-desc').textContent = "Kamu adalah IMPOSTOR! Arahkan pemain lain secara halus agar memilih KEPUTUSAN SALAH!";
+            } else {
+                box.className = "p-4 rounded-2xl border mb-4 bg-emerald-950/80 border-emerald-700 text-emerald-200";
+                document.getElementById('secret-role-badge').textContent = `🛡️ PERAN: ${p.role.toUpperCase()}`;
+                document.getElementById('secret-role-desc').textContent = "Kamu adalah ANGGOTA TIM SETIA. Analisis data bencana dengan bijak & cari Impostor!";
+            }
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('stat-health').textContent = `${environmentHealth}%`;
+            document.getElementById('stat-score').textContent = totalTeamScore;
+            document.getElementById('stat-round').textContent = `${roundCounter} / 6`;
+        }
+
+        function renderMapPinsAndPawns() {
+            const container = document.getElementById('map-pins-container');
+            container.innerHTML = '';
+
+            REGION_LOCATIONS.forEach(loc => {
+                const pin = document.createElement('div');
+                pin.className = "absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-auto cursor-pointer z-10";
+                pin.style.left = `${loc.x}%`;
+                pin.style.top = `${loc.y}%`;
+
+                const playersHere = players.filter(p => p.locId === loc.id && !p.isEliminated);
+                let pawnsHTML = '';
+                playersHere.forEach(p => {
+                    pawnsHTML += `<div title="${p.name} (${p.role})" class="w-5 h-5 rounded-full border-2 ${p.pawnClass} flex items-center justify-center text-[10px] font-black text-white shadow">${p.id}</div>`;
+                });
+
+                pin.innerHTML = `
+                    <i class="fa-solid fa-location-dot text-2xl text-rose-500 drop-shadow-md"></i>
+                    <span class="bg-slate-900/90 text-white font-bold text-[10px] px-2 py-0.5 rounded border border-slate-700 shadow mt-0.5">${loc.name}</span>
+                    <div class="flex items-center gap-1 mt-1">${pawnsHTML}</div>
+                `;
+                container.appendChild(pin);
+            });
+        }
+
+        function updateTurnIndicator() {
+            const curP = players[currentPlayerIdx];
+            document.getElementById('turn-indicator').textContent = `Giliran: ${curP.name}`;
+        }
+
+        function rollDiceCurrentPlayer() {
+            const curP = players[currentPlayerIdx];
+            if(curP.isEliminated) { nextTurnPlayer(); return; }
+
+            const diceVal = Math.floor(Math.random() * 6) + 1;
+            const targetLoc = REGION_LOCATIONS[(diceVal - 1) % REGION_LOCATIONS.length];
+
+            document.getElementById('dice-result-text').textContent = `${diceVal} -> ${targetLoc.name}`;
+            curP.locId = targetLoc.id;
+
+            appendLog(`[Dadu] ${curP.name} berpindah ke ${targetLoc.name}.`);
+            nextTurnPlayer();
+            renderMapPinsAndPawns();
+            updatePlayersStatusGrid();
+        }
+
+        function nextTurnPlayer() {
+            do {
+                currentPlayerIdx = (currentPlayerIdx + 1) % players.length;
+            } while(players[currentPlayerIdx].isEliminated);
+            updateTurnIndicator();
+        }
+
+        function updatePlayersStatusGrid() {
+            const grid = document.getElementById('players-status-grid');
+            grid.innerHTML = '';
+            players.forEach(p => {
+                const locObj = REGION_LOCATIONS.find(l => l.id === p.locId);
+                grid.innerHTML += `
+                    <div class="p-2 rounded-xl border flex items-center space-x-2 shadow ${p.isEliminated ? 'bg-rose-950/40 border-rose-900 opacity-60' : 'bg-slate-900/90 border-slate-800'}">
+                        <div class="w-6 h-6 rounded-xl border ${p.pawnClass} flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">${p.id}</div>
+                        <div class="overflow-hidden">
+                            <div class="text-[11px] font-bold text-slate-200 truncate">${p.name}</div>
+                            <div class="text-[9px] text-amber-400 font-medium truncate"><i class="fa-solid fa-user-tag"></i> ${p.role}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function triggerEventByNumber() {
+            const numVal = parseInt(document.getElementById('input-event-number').value);
+            if(isNaN(numVal) || numVal < 1 || numVal > 27) {
+                alert("Masukkan nomor kartu event antara 1 sampai 27!");
+                return;
+            }
+
+            activeCard = EVENT_CARDS_DATABASE.find(e => e.id === numVal) || EVENT_CARDS_DATABASE[0];
+
+            document.getElementById('card-event-badge').textContent = `Kartu Event #${activeCard.id}`;
+            document.getElementById('card-event-loc').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${activeCard.title}`;
+            document.getElementById('card-event-title').textContent = activeCard.title;
+            document.getElementById('card-event-story').textContent = activeCard.story;
+            document.getElementById('card-event-impact').textContent = activeCard.impact;
+            document.getElementById('card-event-data').textContent = activeCard.data;
+            document.getElementById('card-event-opinion').textContent = activeCard.opinion;
+
+            document.getElementById('panel-active-event').classList.remove('hidden');
+            appendLog(`[Event #${activeCard.id}] ${activeCard.title} dibuka.`);
+        }
+
+        function dispatchNearestPionToEvent() {
+            if(!activeCard) return;
+            setupDecisionPhaseModal();
+            document.getElementById('modal-decision').classList.remove('hidden');
+            startCountdownTimer();
+        }
+
+        function setupDecisionPhaseModal() {
+            const opts = activeCard.options;
+            for(let i = 0; i < 3; i++) {
+                document.getElementById(`opt-${i}-text`).textContent = opts[i].text;
+                document.getElementById(`opt-${i}-tokens`).textContent = opts[i].token;
+            }
+        }
+
+        function startCountdownTimer() {
+            clearInterval(timerInterval);
+            remainingSeconds = 90;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+                updateTimerDisplay();
+                if(remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    selectDecisionOption(1);
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(remainingSeconds / 60);
+            const secs = remainingSeconds % 60;
+            document.getElementById('timer-text').textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        function selectDecisionOption(optionIdx) {
+            clearInterval(timerInterval);
+            const chosen = activeCard.options[optionIdx];
+            const isCorrect = chosen.correct;
+
+            document.getElementById('modal-decision').classList.add('hidden');
+            const iconBox = document.getElementById('result-icon-box');
+
+            if(isCorrect) {
+                totalTeamScore += 100;
+                iconBox.className = "w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                iconBox.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+                document.getElementById('result-title').textContent = "Keputusan Tepat!";
+                document.getElementById('result-desc').textContent = "Pilihan keputusan tepat! Bencana teratasi secara efisien.";
+                document.getElementById('res-score-diff').textContent = "+100";
+                document.getElementById('res-health-diff').textContent = "-0%";
+                appendLog(`[Keputusan] BENAR! +100 poin.`);
+            } else {
+                environmentHealth = Math.max(0, environmentHealth - 15);
+                iconBox.className = "w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-3 bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                iconBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+                document.getElementById('result-title').textContent = "Keputusan Salah!";
+                document.getElementById('result-desc').textContent = "Keputusan salah! Kesehatan lingkungan berkurang. KARTU EVENT PLUS KINI TERBUKA di panel sebelah kiri!";
+                document.getElementById('res-score-diff').textContent = "+0";
+                document.getElementById('res-health-diff').textContent = "-15%";
+                
+                // AKTIFKAN PANEL KARTU EVENT PLUS
+                canTriggerEventPlus = true;
+                const epPanel = document.getElementById('panel-event-plus-trigger');
+                epPanel.classList.remove('opacity-50', 'pointer-events-none');
+                epPanel.classList.add('border-amber-500', 'bg-amber-950/30');
+
+                appendLog(`[Keputusan] SALAH! Kesehatan -15%. Tempat Kartu Event Plus TERBUKA!`);
+            }
+
+            updateStatsDisplay();
+            document.getElementById('modal-round-result').classList.remove('hidden');
+        }
+
+        function triggerEventPlusByNumber() {
+            if(!canTriggerEventPlus) {
+                alert("Tempat Kartu Event Plus hanya terbuka jika tim SALAH memilih keputusan!");
+                return;
+            }
+            const numVal = parseInt(document.getElementById('input-event-plus-number').value);
+            if(isNaN(numVal) || numVal < 1 || numVal > 13) {
+                alert("Masukkan nomor Kartu Event Plus antara 1 sampai 13!");
+                return;
+            }
+
+            activeEventPlus = EVENT_PLUS_DATABASE.find(ep => ep.id === numVal);
+            document.getElementById('event-plus-title').textContent = activeEventPlus.title;
+            document.getElementById('event-plus-question').textContent = activeEventPlus.q;
+            document.getElementById('ep-opt-a').textContent = "A. " + activeEventPlus.opts.A;
+            document.getElementById('ep-opt-b').textContent = "B. " + activeEventPlus.opts.B;
+            document.getElementById('ep-opt-c').textContent = "C. " + activeEventPlus.opts.C;
+
+            document.getElementById('modal-event-plus').classList.remove('hidden');
+        }
+
+        function answerEventPlus(ans) {
+            document.getElementById('modal-event-plus').classList.add('hidden');
+            if(ans === activeEventPlus.correct) {
+                alert("Jawaban Event Plus BENAR! Kamu mendapatkan satu Clue Rahasia mengenai Impostor!");
+                giveImpostorClue();
+            } else {
+                alert("Jawaban Event Plus SALAH! Clue gagal didapatkan.");
+                appendLog(`[Event Plus] Jawaban salah. Clue gagal didapatkan.`);
+            }
+        }
+
+        function giveImpostorClue() {
+            const impostors = players.filter(p => p.isImpostor);
+            if(impostors.length === 0) return;
+
+            // Pilih 1 impostor acak & ambil 1 clue acak dari perannya
+            const targetImp = impostors[Math.floor(Math.random() * impostors.length)];
+            const clueList = CLUE_DATABASE[targetImp.role] || ["Sumpah Hipokrates", "Pistol", "Air"];
+            const randomClue = clueList[Math.floor(Math.random() * clueList.length)];
+
+            document.getElementById('clue-text-content').textContent = ` Kata Kunci Clue: "${randomClue}"`;
+            document.getElementById('modal-clue-display').classList.remove('hidden');
+            appendLog(`[Clue Buka] Tim mendapatkan clue rahasia Impostor: "${randomClue}"`);
+        }
+
+        function closeEventPlusModal() { document.getElementById('modal-event-plus').classList.add('hidden'); }
+        function closeClueModal() { document.getElementById('modal-clue-display').classList.add('hidden'); }
+
+        function proceedFromRoundResult() {
+            document.getElementById('modal-round-result').classList.add('hidden');
+
+            // FASE VOTE IMPOSTOR KHUSUS RONDE 3, 5, DAN 6
+            if(roundCounter === 3 || roundCounter === 5 || roundCounter === 6) {
+                openVotingModal();
+            } else {
+                advanceToNextRoundDirectly();
+            }
+        }
+
+        function advanceToNextRoundDirectly() {
+            if(roundCounter >= 6) {
+                showGameOverScreen();
+                return;
+            }
+            roundCounter++;
+            updateStatsDisplay();
+            document.getElementById('panel-active-event').classList.add('hidden');
+            document.getElementById('input-event-number').value = '';
+            document.getElementById('input-event-plus-number').value = '';
+            
+            // Lock kembali event plus
+            canTriggerEventPlus = false;
+            const epPanel = document.getElementById('panel-event-plus-trigger');
+            epPanel.classList.add('opacity-50', 'pointer-events-none');
+
+            appendLog(`[Ronde Lanjut] Memasuki Ronde ${roundCounter}.`);
+        }
+
+        function openVotingModal() {
+            document.getElementById('voting-round-title').textContent = `FASE MENEBAK IMPOSTOR (RONDE ${roundCounter})`;
+            const grid = document.getElementById('voting-candidates-grid');
+            grid.innerHTML = '';
+
+            players.filter(p => !p.isEliminated).forEach(p => {
+                grid.innerHTML += `
+                    <div onclick="voteEliminatePlayer(${p.id})" class="cursor-pointer bg-slate-900 border border-slate-800 hover:border-rose-500 p-3 rounded-2xl text-center group transition">
+                        <div class="w-8 h-8 rounded-full border ${p.pawnClass} mx-auto mb-1 flex items-center justify-center text-xs font-bold text-white">${p.id}</div>
+                        <div class="text-xs font-bold text-white">${p.name}</div>
+                        <div class="text-[10px] text-slate-400 mt-1 group-hover:text-rose-400 font-bold">Diskualifikasi P${p.id}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('modal-voting').classList.remove('hidden');
+        }
+
+        function voteEliminatePlayer(pid) {
+            const p = players.find(x => x.id === pid);
+            p.isEliminated = true;
+            document.getElementById('modal-voting').classList.add('hidden');
+
+            if(p.isImpostor) {
+                alert(`BERHASIL! ${p.name} (Peran: ${p.role}) adalah benar seorang IMPOSTOR!`);
+                appendLog(`[Voting] ${p.name} terbukti Impostor dan didiskualifikasi!`);
+            } else {
+                alert(`SALAH! ${p.name} (Peran: ${p.role}) ternyata BUKAN Impostor! Tim kehilangan anggota setia.`);
+                appendLog(`[Voting] ${p.name} didiskualifikasi (Bukan Impostor).`);
+            }
+
+            updatePlayersStatusGrid();
+            advanceToNextRoundDirectly();
+        }
+
+        function skipVotingRound() {
+            document.getElementById('modal-voting').classList.add('hidden');
+            appendLog(`[Voting] Voting dilewati di Ronde ${roundCounter}.`);
+            advanceToNextRoundDirectly();
+        }
+
+        function showGameOverScreen() {
+            document.getElementById('modal-game-over').classList.remove('hidden');
+            document.getElementById('final-score-val').textContent = totalTeamScore;
+            document.getElementById('final-health-val').textContent = `${environmentHealth}%`;
+
+            const impostorNames = players.filter(p => p.isImpostor).map(p => `${p.name} (${p.role})`).join(', ');
+            document.getElementById('final-impostor-list').textContent = impostorNames || 'Tidak Ada';
+        }
+
+        function resetGameToSetup() {
+            document.getElementById('modal-game-over').classList.add('hidden');
+            document.getElementById('gameplay-dashboard').classList.add('hidden');
+            document.getElementById('top-stats-bar').classList.add('hidden');
+            document.getElementById('modal-setup').classList.remove('hidden');
+        }
+
+        function uploadCustomMapImage(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('map-image').src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function appendLog(msg) {
+            const logBox = document.getElementById('activity-log');
+            const p = document.createElement('p');
+            p.textContent = msg;
+            logBox.appendChild(p);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // INITIALIZE INPUTS
+        setPlayerCount(4);
+    </script>
+</body>
+</html>
